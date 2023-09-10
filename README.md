@@ -79,3 +79,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Contact
 If you have any questions or suggestions, please feel free to contact the author.
 
+<a href="https://www.youtube.com/@MetaMinds-cgu" target="_blank">
+  <img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/youtube.svg" alt="MetaMinds-cgu" height="30" width="40" />
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Soumyaranjan%20Sahoo-blue?style=for-the-badge&logo=linkedin)](www.linkedin.com/in/soumya-ranjan-sahoo-b06807248/)            
+
