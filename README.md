@@ -36,12 +36,12 @@ Before running this project, you need to have the following:
 # Navigate to the project directory:
 cd object-face-detection
 
-# Ensure you have the necessary files and dependencies mentioned in the prerequisites section.
+## Ensure you have the necessary files and dependencies mentioned in the prerequisites section.
 
-# Run the main script:
+## Run the main script:
 python main.py
 
-# The application will open a window showing the video feed from the camera source. Detected objects and faces will be highlighted with bounding boxes, and unique IDs will be assigned to detected faces.
+### The application will open a window showing the video feed from the camera source. Detected objects and faces will be highlighted with bounding boxes, and unique IDs will be assigned to detected faces.
 
 #Press 'q' to exit the application.
 
