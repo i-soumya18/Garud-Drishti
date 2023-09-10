@@ -60,36 +60,20 @@ def calculate_frame_rate():
         prev_time = current_time
 
     return frame_rate
-# Function to calculate dress color and height of a person based on detected region
-# Initialize variables for tracking unique IDs
-next_unique_id = 1
-detected_persons = {}  # Dictionary to store detected persons and their IDs
 
-# Function to calculate dress color and height of a person based on detected region
-def calculate_dress_color_and_height(frame, x, y, w, h):
-    # Crop the region around the person's chest for dress color detection
-    chest_region = frame[y:y + int(1.2 * h), x:x + w]
-
-    # Calculate the average color of the chest region (you can use a more sophisticated method for dress color)
-    avg_color = np.mean(chest_region, axis=(0, 1))
-    dress_color = "Unknown"  # Placeholder for dress color detection
-
-    # Calculate height based on the person's bounding box
-    height = h  # You can refine this based on your camera perspective and calibration
-
-    return dress_color, height
 
 # Function to detect humans and objects
-def detect_objects(frame):
+'''def detect_objects(frame):
     blob = cv2.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
     net.setInput(blob)
     layer_names = net.getUnconnectedOutLayersNames()
     outs = net.forward(layer_names)
-    return outs, classes
+    return outs, classes'''
 
-# Function to draw bounding boxes and assign unique IDs to humans
+# Function to draw bounding boxes
+
 def draw_boxes(frame, outs, classes):
-    global next_unique_id, detected_persons  # Declare global variables
+    global next_unique_id  # Declare next_unique_id as a global variable
 
     height, width, _ = frame.shape
     for out in outs:
@@ -118,29 +102,28 @@ def draw_boxes(frame, outs, classes):
 
                     # Check if the detected person is already in the dictionary
                     found_match = False
-                    for person_id, (prev_x, prev_y, prev_w, prev_h) in detected_persons.items():
+                    for face_id, (prev_x, prev_y, prev_w, prev_h) in detected_faces.items():
                         if x > prev_x and y > prev_y and x + w < prev_x + prev_w and y + h < prev_y + prev_h:
-                            # Detected person matches a previously detected person
+                            # Detected person matches a previously detected face
                             found_match = True
                             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                            cv2.putText(frame, f'Person {person_id}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                            cv2.putText(frame, f'Person {face_id}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                             break
 
                     if not found_match:
                         # This is a new person, assign a unique ID
-                        detected_persons[next_unique_id] = (x, y, w, h)
-                        dress_color, height = calculate_dress_color_and_height(frame, x, y, w, h)
+                        detected_faces[next_unique_id] = (x, y, w, h)
                         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                         cv2.putText(frame, f'Person {next_unique_id}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                         timestamp = datetime.now()
                         try:
-                            cursor.execute("INSERT INTO person_detections (timestamp, unique_id, dress_color, height) VALUES (?, ?, ?, ?)",
-                                           (timestamp, next_unique_id, dress_color, height))
+                            cursor.execute("INSERT INTO face_detections (timestamp, x, y, width, height, unique_id) VALUES (?, ?, ?, ?, ?, ?)",
+                                           (timestamp, x, y, w, h, next_unique_id))
                             conn.commit()
                         except sqlite3.Error as e:
                             print("SQLite Error:", e)
                         next_unique_id += 1
-
+# Initialize the camera
 cap = cv2.VideoCapture(0)  # Use 0 for system camera, replace with the appropriate source for CCTV or other cameras
 
 while True:
@@ -149,10 +132,10 @@ while True:
         break
 
     # Detect objects in the frame
-    outs, classes = detect_objects(frame)
+    #outs, classes = detect_objects(frame)
 
     # Draw bounding boxes around detected objects and assign unique IDs to humans
-    draw_boxes(frame, outs, classes)
+   # draw_boxes(frame, outs, classes)
 
     # Detect faces in the frame
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
