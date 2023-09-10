@@ -4,6 +4,11 @@ import sqlite3
 from datetime import datetime
 import winsound  # Import the winsound library for playing alert sound
 
+#Function to add current time and date to the camera feed frame
+def add_timestamp(frame):
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Format: YYYY-MM-DD HH:MM:SS
+    cv2.putText(frame, current_time, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)  # Display at (10, 30) with white color
+
 # Initialize the SQLite database
 try:
     conn = sqlite3.connect('detection_database.db')
@@ -96,13 +101,7 @@ def play_alert_sound():
     # Play a beep sound for 1 second (you can replace this with your preferred alert sound)
     winsound.Beep(1000, 1000)
 
-# Function to detect humans and objects
-'''def detect_objects(frame):
-    blob = cv2.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
-    net.setInput(blob)
-    layer_names = net.getUnconnectedOutLayersNames()
-    outs = net.forward(layer_names)
-    return outs, classes'''
+
 
 # Function to draw bounding boxes
 
@@ -157,6 +156,13 @@ def draw_boxes(frame, outs, classes):
                         except sqlite3.Error as e:
                             print("SQLite Error:", e)
                         next_unique_id += 1
+
+                    # Detect and draw face within the body bounding box
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    faces = face_cascade.detectMultiScale(gray[y:y+h, x:x+w], scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
+                    for (fx, fy, fw, fh) in faces:
+                        cv2.rectangle(frame, (x + fx, y + fy), (x + fx + fw, y + fy + fh), (0, 0, 255), 2)
+
 # Initialize the camera
 cap = cv2.VideoCapture(0)  # Use 0 for system camera, replace with the appropriate source for CCTV or other cameras
 
@@ -165,11 +171,8 @@ while True:
     if not ret:
         break
 
-    # Detect objects in the frame
-    #outs, classes = detect_objects(frame)
 
-    # Draw bounding boxes around detected objects and assign unique IDs to humans
-    # draw_boxes(frame, outs, classes)
+
 
     # Detect faces in the frame
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -222,6 +225,8 @@ while True:
     # Calculate and display frame rate
     frame_rate = calculate_frame_rate()
     cv2.putText(frame, f'Frame Rate: {frame_rate:.2f} FPS', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    # Add current time and date to the frame
+    add_timestamp(frame)
 
     # Display the frame
     cv2.imshow('Video Feed', frame)
