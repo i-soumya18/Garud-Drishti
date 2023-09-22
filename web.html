@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV System Monitoring</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Global styles */
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f1f1f1;
+            color: #333;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* Header styles */
+        h1 {
+            font-size: 48px;
+            font-weight: 600;
+            margin: 50px 0 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+
+        /* Button styles */
+        .button-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .button-container button {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px 35px;
+            margin: 20px 10px; /* Add some spacing between buttons */
+            border: none;
+            border-radius: 50px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .start {
+            background: linear-gradient(to right top, #9B0E47, #880E4F, #730F57, #5E0F5E, #4B115B);
+            color: #fff;
+        }
+
+        .stop {
+            background: linear-gradient(to right top, #C4183C, #DA304E, #E94662, #F16176, #FB8090);
+            color: #fff;
+        }
+
+        .reset {
+            background: linear-gradient(to right top, #1167B1, #1473B9, #177FC1, #198BCA, #1B97D2);
+            color: #fff;
+        }
+
+        /* LED container styles */
+        .led-container {
+            text-align: center;
+            margin: 0 40px;
+            cursor: pointer;
+        }
+
+        .led {
+            display: inline-block;
+            height: 20px;
+            width: 20px;
+            margin: 5px;
+            border-radius: 50%;
+            box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .led.red {
+            background-color: #e74c3c;
+        }
+
+        .led.green {
+            background-color: #2ecc71;
+        }
+
+        .led.blue {
+            background-color: #3498db;
+        }
+
+        .led-container p {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #666;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .led-container:hover .led {
+            transform: scale(1.1);
+            box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Error indication styles */
+        .error-indications {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px; /* Add spacing between buttons and error indications */
+        }
+
+        .error-indication {
+            margin: 0 10px; /* Add spacing between error indications */
+        }
+
+        /* Container styles */
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        /* Video feed styles */
+        .video-feed-container {
+            flex: 1; /* Take up 50% of the container */
+            margin-right: 20px; /* Add some spacing between video and graphs */
+            background-color: #000; /* Black background */
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .video-feed video {
+            width: 100%;
+            height: auto; /* Maintain video aspect ratio */
+        }
+
+        /* Graph options styles */
+        .graph-options {
+            flex: 1; /* Take up 50% of the container */
+            display: flex;
+            flex-direction: column; /* Stack graphs vertically */
+        }
+
+        /* Individual graph styles (you can adjust as needed) */
+        .graph {
+            margin-bottom: 20px; /* Add spacing between graphs */
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graph img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(2px 2px 10px rgba(0, 0, 0, 0.3));
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .graph p {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .graph-hover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .graph-hover p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .graph-hover button {
+            border: none;
+            border-radius: 50px;
+            padding: 12px 35px;
+            background-color: #333;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .graph:hover .graph-hover {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .graph:hover img {
+            transform: scale(1.1);
+            box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .graph:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Media query for smaller screens */
+        @media (max-width: 768px) {
+            /* Add your responsive styles here */
+        }
+    </style>
+</head>
+<body>
+<h1>CCTV System Monitoring</h1>
+<div class="container">
+    <div class="video-feed-container">
+        <video src="video_feed.mp4" autoplay loop></video>
+    </div>
+    <div class="graph-options">
+        <!-- Graphs go here -->
+        <div class="graph">
+            <img src="demo_graph_1.png" alt="Graph 1">
+            <div class="graph-hover">
+                <p>Graph 1</p>
+                <button>Select</button>
+            </div>
+        </div>
+        <div class="graph">
+            <img src="demo_graph_2.png" alt="Graph 2">
+            <div class="graph-hover">
+                <p>Graph 2</p>
+                <button>Select</button>
+            </div>
+        </div>
+        <div class="graph">
+            <img src="demo_graph_3.png" alt="Graph 3">
+            <div class="graph-hover">
+                <p>Graph 3</p>
+                <button>Select</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="button-container">
+    <div>
+        <button class="start">Start System</button>
+    </div>
+    <div>
+        <button class="stop">Stop System</button>
+    </div>
+    <div>
+        <button class="reset">Show Database</button>
+    </div>
+</div>
+<div class="error-indications">
+    <div class="error-indication">
+        <div class="led red"></div>
+        <p>Database Error</p>
+    </div>
+    <div class="error-indication">
+        <div class="led green"></div>
+        <p>System Status</p>
+    </div>
+    <div class="error-indication">
+        <div class="led blue"></div>
+        <p>Network Connection</p>
+    </div>
+</div>
+
+<script>
+    const ledContainers = document.querySelectorAll('.led-container');
+    const graphs = document.querySelectorAll('.graph');
+
+    // LED Indicators
+    ledContainers.forEach(container => {
+        container.addEventListener('click', () => {
+            const led = container.querySelector('.led');
+            led.classList.toggle('led-on');
+        });
+    });
+
+    // Graphs
+    graphs.forEach(graph => {
+        graph.addEventListener('click', () => {
+            alert(`You selected ${graph.querySelector('p').textContent}`);
+        });
+    });
+</script>
+</body>
+</html>
