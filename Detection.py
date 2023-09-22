@@ -3,6 +3,12 @@ import numpy as np
 import sqlite3
 from datetime import datetime
 import winsound  # Import the winsound library for playing alert sound
+from flask import jsonify
+from mtcnn import MTCNN
+
+# Initialize the MTCNN detector
+mtcnn_detector = MTCNN()
+
 
 #Function to add current time and date to the camera feed frame
 def add_timestamp(frame):
@@ -102,6 +108,19 @@ def play_alert_sound():
     winsound.Beep(1000, 1000)
 
 
+def stop_system():
+    try:
+        if cv2.waitKey(10) & 0xFF == ord('q'):
+
+        # For example, you can release the camera and perform cleanup operations
+            cap.release()  # Release the camera
+            conn.close()   # Close the SQLite database connection
+
+        return jsonify(success=True)
+    except Exception as e:
+        return jsonify(success=False, error=str(e))
+
+
 
 # Function to draw bounding boxes
 
@@ -171,30 +190,27 @@ while True:
     if not ret:
         break
 
+    # Detect faces in the frame using MTCNN
+    faces = mtcnn_detector.detect_faces(frame)
 
-
-
-    # Detect faces in the frame
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
-
-    # Check the number of detected faces
+    # Define frame_color based on the number of detected faces
     num_faces = len(faces)
-    # Play alert sound and change frame color if more than 4 faces are detected
     if num_faces > 3:
         play_alert_sound()
         frame_color = (0, 0, 255)  # Red color for the frame background
     else:
         frame_color = (0, 255, 0)  # Green color for the frame background
 
-    # Draw rectangles around detected faces and assign unique IDs to faces
-    for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+    for face in faces:
+        x, y, width, height = face['box']
+        # Draw rectangles and perform further processing (recognition, storing, etc.)
+        cv2.rectangle(frame, (x, y), (x + width, y + height), (0, 0, 255), 2)
 
         # Check if the detected face matches a previously detected person
         found_match = False
         for face_id, (prev_x, prev_y, prev_w, prev_h) in detected_faces.items():
-            if x > prev_x and y > prev_y and x + w < prev_x + prev_w and y + h < prev_y + prev_h:
+            if x > prev_x and y > prev_y and x + width < prev_x + prev_w and y + height < prev_y + prev_h:
                 # Detected face matches a previously detected person
                 found_match = True
                 # Check the human information database for details about the detected person
@@ -208,19 +224,19 @@ while True:
                     cv2.putText(frame, f'Person {face_id}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, frame_color, 2)
                 break
 
-
         if not found_match:
             # This is a new face, assign a unique ID
-            detected_faces[next_unique_id] = (x, y, w, h)
+            detected_faces[next_unique_id] = (x, y, width, height)
             cv2.putText(frame, f'Person {next_unique_id}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
             timestamp = datetime.now()
             try:
                 cursor.execute("INSERT INTO face_detections (timestamp, x, y, width, height, unique_id) VALUES (?, ?, ?, ?, ?, ?)",
-                               (timestamp, x, y, w, h, next_unique_id))
+                               (timestamp, x, y, width, height, next_unique_id))
                 conn.commit()
             except sqlite3.Error as e:
                 print("SQLite Error:", e)
             next_unique_id += 1
+
 
     # Calculate and display frame rate
     frame_rate = calculate_frame_rate()
