@@ -6,6 +6,8 @@ import winsound  # Import the winsound library for playing alert sound
 from flask import jsonify
 from mtcnn import MTCNN
 
+from email_alert import send_email
+
 # Initialize the MTCNN detector
 mtcnn_detector = MTCNN()
 
@@ -112,7 +114,7 @@ def stop_system():
     try:
         if cv2.waitKey(10) & 0xFF == ord('q'):
 
-        # For example, you can release the camera and perform cleanup operations
+            # For example, you can release the camera and perform cleanup operations
             cap.release()  # Release the camera
             conn.close()   # Close the SQLite database connection
 
@@ -195,8 +197,14 @@ while True:
 
     # Define frame_color based on the number of detected faces
     num_faces = len(faces)
-    if num_faces > 3:
+    if num_faces > 0:
         play_alert_sound()
+        subject = 'Alert: Suspicious Activity Detected'
+        message = f'The system detected {num_faces} faces in the frame. Please check the video feed.'
+        sender_email = 'xxxxxxx'  # Change this to your email address
+        sender_password = 'xxxxxxx'  # Change this to your email password
+        receiver_email = 'sahoosoumya242004@gmail.com'  # Change this to the receiver's email address
+        send_email(subject, message, sender_email, sender_password, receiver_email)
         frame_color = (0, 0, 255)  # Red color for the frame background
     else:
         frame_color = (0, 255, 0)  # Green color for the frame background
