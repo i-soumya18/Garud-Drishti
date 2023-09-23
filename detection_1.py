@@ -249,9 +249,9 @@ cv2.destroyAllWindows()
         play_alert_sound()
         subject = 'Alert: Suspicious Activity Detected'
         message = f'The system detected {num_faces} faces in the frame. Please check the video feed.'
-        sender_email = 'metaminds23@gmail.com'  # Change this to your email address
-        sender_password = 'metaminds@cgu23'  # Change this to your email password
-        receiver_email = 'sahoosoumya242004@gmail.com'  # Change this to the receiver's email address
+        sender_email = 'xxxxxxxx'  # Change this to your email address
+        sender_password = 'xxxxx'  # Change this to your email password
+        receiver_email = 'yyyyyy'  # Change this to the receiver's email address
         send_email(subject, message, sender_email, sender_password, receiver_email)
         frame_color = (0, 0, 255)  # Red color for the frame background
     else:
