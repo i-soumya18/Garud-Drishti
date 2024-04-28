@@ -30,7 +30,7 @@ Before running this project, you need to have the following:
 1. Clone this repository to your local machine:
 
    ```bash
-   (https://github.com/i-soumya18/Garud-Drishti/edit/main/README.md)
+   (https://github.com/i-soumya18/Garud-Drishti)
 
 
 # Navigate to the project directory:
